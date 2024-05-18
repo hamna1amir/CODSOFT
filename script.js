@@ -1,110 +1,59 @@
-let memory = 0;
-let history = [];
+document.addEventListener("DOMContentLoaded", function () {
+    // Add event listener to the form submit
+    document.getElementById("login-form").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent the default form submission
 
-function clearDisplay() {
-    document.getElementById('display').textContent = '0';
-}
+        // Get the username, password, and role values from the form
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+        let role = document.getElementById("role").value;
+        console.log('hehre', username, password, role)
 
-function appendToDisplay(value) {
-    let display = document.getElementById('display');
-    if (display.textContent === '0' && value !== '.') {
-        display.textContent = value;
-    } else {
-        display.textContent += value;
-    }
-}
+        // Regular expression to check if the username is not just a combination of generic words
+        let genericWordsRegex = /^(asd|bsd|wer|bla|test)$/i;
 
-function calculate() {
-    let expression = document.getElementById('display').textContent;
-    try {
-        let result = eval(expression);
-        document.getElementById('display').textContent = result;
-        history.push(expression + ' = ' + result);
-        updateHistory();
-    } catch (error) {
-        document.getElementById('display').textContent = 'Error';
-    }
-}
-
-function updateHistory() {
-    let historyDiv = document.getElementById('history');
-    historyDiv.innerHTML = '';
-    history.forEach(item => {
-        let p = document.createElement('p');
-        p.textContent = item;
-        historyDiv.appendChild(p);
-    });
-}
-
-function memoryClear() {
-    memory = 0;
-}
-
-function memoryRecall() {
-    document.getElementById('display').textContent = memory;
-}
-
-function memoryAdd() {
-    memory += parseFloat(document.getElementById('display').textContent);
-}
-
-function memorySubtract() {
-    memory -= parseFloat(document.getElementById('display').textContent);
-}
-
-function squareRoot() {
-    let number = parseFloat(document.getElementById('display').textContent);
-    if (number >= 0) {
-        document.getElementById('display').textContent = Math.sqrt(number);
-    } else {
-        document.getElementById('display').textContent = 'Error';
-    }
-}
-
-function power() {
-    let base = parseFloat(document.getElementById('display').textContent);
-    let exponent = parseFloat(prompt('Enter exponent'));
-    if (!isNaN(exponent)) {
-        document.getElementById('display').textContent = Math.pow(base, exponent);
-    } else {
-        document.getElementById('display').textContent = 'Error';
-    }
-}
-
-function sin() {
-    let angle = parseFloat(document.getElementById('display').textContent);
-    document.getElementById('display').textContent = Math.sin(angle);
-}
-
-function cos() {
-    let angle = parseFloat(document.getElementById('display').textContent);
-    document.getElementById('display').textContent = Math.cos(angle);
-}
-
-function tan() {
-    let angle = parseFloat(document.getElementById('display').textContent);
-    document.getElementById('display').textContent = Math.tan(angle);
-}
-
-function convertUnit(unit) {
-    let value = parseFloat(document.getElementById('display').textContent);
-    if (unit === 'cm') {
-        document.getElementById('display').textContent = value * 0.393701;
-    } else if (unit === 'inch') {
-        document.getElementById('display').textContent = value * 2.54;
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const body = document.body;
-
-    darkModeToggle.addEventListener('change', () => {
-        if (darkModeToggle.checked) {
-            body.classList.add('dark-theme');
-        } else {
-            body.classList.remove('dark-theme');
+        // Validate username
+        if (genericWordsRegex.test(username)) {
+            alert("Please enter a valid username."); // Display an alert message
+            return;
         }
-    });
-});
 
+        // Validate password length and alphanumeric characters
+        if (password.length < 7 || !password.match(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{7,}$/)) {
+            alert("Password should be at least 7 characters long and contain both letters and numbers."); // Display an alert message
+            return;
+        }
+
+        // // Send the form data to the server using fetch API
+        fetch("login.php", {
+            method: "POST",
+            body: JSON.stringify({ username: username, password: password, role: role }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+            .then(response => response.json()) // Parse JSON response
+            .then(data => {
+                console.log('data', data)
+                document.getElementById("login-message").textContent = data.message;
+                // Assume login success when "Success" message is received
+                if (data.success) {
+                    setTimeout(() => {
+                        
+                        onLoginSuccess();
+                    }, 1000); 
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+    });
+
+    function onLoginSuccess() {
+       
+        console.log('success')
+        window.location.href = "membership.html"; // Redirect to the membership page
+
+    }
+
+})
